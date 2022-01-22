@@ -4,8 +4,8 @@
     // Connexion BDD SQL:
     try{
         $connexion = new PDO('mysql:host=localhost;dbname=meteo;charset=utf8',
-        'username',
-        'password'
+        'The10axe',
+        'The10axe'
         );
         if ($_GET['time'] != null)
             $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
@@ -106,7 +106,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: "Room"
+                            text: "Chambre d'Axel"
                         },
                     },
                     scales: {
@@ -123,6 +123,7 @@
                         y: {
                             display: true,
                             position: 'left',
+                            type: 'linear',
                             ticks: {
                                 color: 'rgb(255,0,0)',
                             },
@@ -135,6 +136,7 @@
                         y1: {
                             display: true,
                             position: 'left',
+                            type: 'linear',
                             ticks: {
                                 color: 'rgb(0,0,255)',
                             },
@@ -154,8 +156,10 @@
                         {
                             label: "Température (°C)",
                             yAxisID: "y",
+                            tension: 0.4,
                             borderColor: "rgb(255,0,0)",
                             backgroundColor: "rgba(255,0,0,0.5)",
+                            cubicInterpolationMode: 'monotone',
                             data: [
                                 <?php
                                     foreach ($result as $line){
@@ -169,8 +173,10 @@
                         {
                             label: "Humidité (%)",
                             yAxisID: "y1",
+                            tension: 0.4,
                             borderColor: "rgb(0,0,255)",
                             backgroundColor: "rgba(0,0,255,0.5)",
+                            cubicInterpolationMode: 'monotone',
                             data: [
                                 <?php
                                     foreach ($result as $line){
