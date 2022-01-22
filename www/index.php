@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
     <?php
+    // Connexion BDD SQL:
     try{
-        $connexion = new PDO('mysql:host=localhost;dbname=sensor;charset=utf8',
+        $connexion = new PDO('mysql:host=localhost;dbname=meteo;charset=utf8',
         'username',
         'password'
         );
-        if ($_GET[time] != null)
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `sensor`.`bedroom` WHERE `date` >= now() - INTERVAL '.$_GET[time].' ORDER BY `id` DESC;');
+        if ($_GET['time'] != null)
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
         else
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `sensor`.`bedroom` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
         $query->execute();
         $result = $query->fetchAll();
     }
@@ -24,92 +25,18 @@
         <meta charset="utf-8" />
         <link rel="stylesheet" href="style.css" />
         <title>Thermomètre connecté</title>
-        <script type="text/javascript">
-            window.onload = function () {
-            var chart = new CanvasJS.Chart("chartContainer",
-            {
-                toolTip: {
-                    shared: true
-                },
-                theme: "light2",
-                title: {
-                    text: "Bedroom"
-                },
-                axisX: {
-                    title: "Temps",
-                    valueFormatString: "DD/MM/YY HH:mm"
-                },
-                
-                axisY: [
-                {
-                    title: "Température",
-                    lineColor: "#FF0000",
-                    tickColor: "#FF0000",
-                    labelFontColor: "#FF0000",
-                    titleFontColor: "#FF0000",
-                    lineThickness: 2
-                },
-                {
-                    title: "Humidité",
-                    lineColor: "#0000FF",
-                    tickColor: "#0000FF",
-                    labelFontColor: "#0000FF",
-                    titleFontColor: "#0000FF",
-                    lineThickness: 2
-                }
-                ],
-                
-                data: [
-                {
-                    name: "Température",
-                    type: "spline",
-                    color: "#FF0000",
-                    xValueType: "dateTime",
-                    xValueFormatString: "DD/MM/YYYY 'à' HH':'mm",
-                    yValueFormatString: "##.0 °C",
-                    dataPoints: [
-                        <?php
-                            foreach ($result as $line){
-                        ?>
-                        {x: <?php echo strtotime($line['date'])*1000;?>, y: <?php echo $line['temperature'];?> },
-                        <?php
-                            }
-                        ?>
-                    ]
-                },
-                {
-                    name: "Humidité",
-                    type: "spline",
-                    axisYIndex: 1,
-                    color: "#0000FF",
-                    minimum: 0,
-                    maximum: 100,
-                    yValueFormatString: "##.0 '%'",
-                    xValueType: "dateTime",
-                    dataPoints: [
-                        <?php
-                            foreach ($result as $line){
-                        ?>
-                        { x: <?php echo strtotime($line['date'])*1000;?>, y: <?php echo $line['humidite'];?>},
-                        <?php
-                            }
-                        ?>
-                    ]
-                }
-            ]
-        });
-        chart.render();
-    }
-                </script>
-        <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script></head>
+        <script src="library/chart.js"></script>
+        <script src="library/luxon.js"></script>
+        <script src="library/chartjs-adapter-luxon.js"></script>
     </head>
     <body>
-        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+        <canvas id="chartContainer" style="height: 300px; width: 100%;"></canvas>
         <table>
             <thead>
                 <tr>
                     <th colspan="2">Minimum</th>
                     <th colspan="2">Maximum</th>
+                    <th colspan="2">Actuelle</th>
                 </tr>
             </thead>
             <tbody>
@@ -146,6 +73,8 @@
                     echo $temperature." °C<br>(".$tdate.")";
                     ?></td>
                     <td><?php echo $humidite." %<br>(".$hdate.")"; ?></td>
+                    <td><?php echo $result[0]['temperature']." °C<br>(".$result[0]['date'].")"; ?></td>
+                    <td><?php echo $result[0]['humidite']." %<br>(".$result[0]['date'].")"; ?></td>
                 </tr>
             </tbody>
         </table>
@@ -162,5 +91,99 @@
             <li><a href="?time=1 week">1 semaine</a></li>
             <li><a href="?time=1 month">1 mois</a></li>
         </ul>
+        <script type="text/javascript">
+            const ctx = document.getElementById('chartContainer').getContext('2d');
+            const chartContainer = new Chart(ctx,
+            {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    stacked: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Room"
+                        },
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                tooltipFormat: 'DD T'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Temps'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            position: 'left',
+                            ticks: {
+                                color: 'rgb(255,0,0)',
+                            },
+                            title: {
+                                display: true,
+                                color: 'rgb(255,0,0)',
+                                text: 'Température (°C)'
+                            }
+                        },
+                        y1: {
+                            display: true,
+                            position: 'left',
+                            ticks: {
+                                color: 'rgb(0,0,255)',
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                            title: {
+                                display: true,
+                                color: 'rgb(0,0,255)',
+                                text: 'Humidité (%)'
+                            }
+                        },
+                    },
+                },
+                data:{
+                    datasets: [
+                        {
+                            label: "Température (°C)",
+                            yAxisID: "y",
+                            borderColor: "rgb(255,0,0)",
+                            backgroundColor: "rgba(255,0,0,0.5)",
+                            data: [
+                                <?php
+                                    foreach ($result as $line){
+                                ?>
+                                {x: <?php echo strtotime($line['date'])*1000;?>, y: <?php echo $line['temperature'];?> },
+                                <?php
+                                    }
+                                ?>
+                            ]
+                        },
+                        {
+                            label: "Humidité (%)",
+                            yAxisID: "y1",
+                            borderColor: "rgb(0,0,255)",
+                            backgroundColor: "rgba(0,0,255,0.5)",
+                            data: [
+                                <?php
+                                    foreach ($result as $line){
+                                ?>
+                                { x: <?php echo strtotime($line['date'])*1000;?>, y: <?php echo $line['humidite'];?>},
+                                <?php
+                                    }
+                                ?>
+                            ]
+                        }
+                    ]
+                }
+            });
+        </script>
     </body>
 </html>
