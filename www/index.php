@@ -4,13 +4,13 @@
     // Connexion BDD SQL:
     try{
         $connexion = new PDO('mysql:host=localhost;dbname=meteo;charset=utf8',
-        'The10axe',
-        'The10axe'
+        'username',
+        'password'
         );
         if ($_GET['time'] != null)
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`bedroom` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
         else
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`bedroom` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
         $query->execute();
         $result = $query->fetchAll();
     }
@@ -106,7 +106,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: "Chambre d'Axel"
+                            text: "Bedroom"
                         },
                     },
                     scales: {
