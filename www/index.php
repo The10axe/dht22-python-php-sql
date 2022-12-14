@@ -4,13 +4,13 @@
     // Connexion BDD SQL:
     try{
         $connexion = new PDO('mysql:host=localhost;dbname=meteo;charset=utf8',
-        'username',
-        'password'
+        'The10axe',
+        'The10axe'
         );
         if ($_GET['time'] != null)
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`bedroom` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL '.$_GET['time'].' ORDER BY `id` DESC;');
         else
-            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`bedroom` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
+            $query = $connexion->prepare('SELECT `date`,`temperature`,`humidite` FROM `meteo`.`chambreAxel` WHERE `date` >= now() - INTERVAL 1 hour ORDER BY `id` DESC;');
         $query->execute();
         $result = $query->fetchAll();
     }
@@ -24,14 +24,14 @@
         <meta http-equiv="refresh" content="60"/>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="style.css" />
-        <title>Thermomètre connecté</title>
+        <title>Chez Axel: <?php echo $result[0]['temperature']." °C - ".$result[0]['humidite']." %"; ?></title>
         <script src="library/chart.js"></script>
         <script src="library/luxon.js"></script>
         <script src="library/chartjs-adapter-luxon.js"></script>
     </head>
     <body>
-        <canvas id="chartContainer" style="height: 300px; width: 100%;"></canvas>
-        <table>
+        <canvas id="chartContainer" style="height: 70vh; width: 100%;"></canvas>
+        <table style="width: 100%;">
             <thead>
                 <tr>
                     <th colspan="2">Minimum</th>
@@ -106,7 +106,7 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: "Bedroom"
+                            text: "Chez Axel"
                         },
                     },
                     scales: {
@@ -127,6 +127,7 @@
                             ticks: {
                                 color: 'rgb(255,0,0)',
                             },
+                            
                             title: {
                                 display: true,
                                 color: 'rgb(255,0,0)',
